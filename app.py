@@ -152,8 +152,26 @@ if df.empty:
     st.stop()
 
 # ── Constants ────────────────────────────────────────────────────────────────
-CITY_DISPLAY = {"Taipei": "台北市", "Taichung": "台中市", "Kaohsiung": "高雄市"}
-CITY_EMOJI   = {"Taipei": "🏙️",    "Taichung": "🌳",      "Kaohsiung": "🌊"}
+CITY_DISPLAY = {
+    "Taipei": "台北市",       "NewTaipei": "新北市",    "Taoyuan": "桃園市",
+    "Taichung": "台中市",     "Tainan": "台南市",       "Kaohsiung": "高雄市",
+    "Keelung": "基隆市",      "Hsinchu": "新竹市",      "HsinchuCounty": "新竹縣",
+    "Miaoli": "苗栗縣",       "Changhua": "彰化縣",     "Nantou": "南投縣",
+    "Yunlin": "雲林縣",       "Chiayi": "嘉義市",       "ChiayiCounty": "嘉義縣",
+    "Pingtung": "屏東縣",     "Yilan": "宜蘭縣",        "Hualien": "花蓮縣",
+    "Taitung": "台東縣",      "Penghu": "澎湖縣",       "Kinmen": "金門縣",
+    "Lienchiang": "連江縣",
+}
+CITY_EMOJI = {
+    "Taipei": "🏙️",   "NewTaipei": "🌆",  "Taoyuan": "✈️",
+    "Taichung": "🌳",  "Tainan": "🏯",     "Kaohsiung": "🌊",
+    "Keelung": "⚓",   "Hsinchu": "💨",    "HsinchuCounty": "🌾",
+    "Miaoli": "🏔️",   "Changhua": "🐂",   "Nantou": "🏞️",
+    "Yunlin": "🌽",    "Chiayi": "🌲",     "ChiayiCounty": "🌿",
+    "Pingtung": "🌴",  "Yilan": "🦆",      "Hualien": "🦅",
+    "Taitung": "🌺",   "Penghu": "🪸",     "Kinmen": "🦀",
+    "Lienchiang": "🏝️",
+}
 
 FUN_TIPS = [
     "☀️ 出門前抬頭看天空，比看手機更準！",

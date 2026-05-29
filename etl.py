@@ -24,8 +24,22 @@ DATABASE_URL = os.environ["DATABASE_URL"]          # Supabase connection string
 # CWA 36-hour forecast endpoint (all cities/counties)
 CWA_ENDPOINT = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001"
 
-TARGET_CITIES_ZH = ["臺北市", "臺中市", "高雄市"]
-CITY_TRANSLATION = {"臺北市": "Taipei", "臺中市": "Taichung", "高雄市": "Kaohsiung"}
+TARGET_CITIES_ZH = [
+    "臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市",
+    "基隆市", "新竹市", "新竹縣", "苗栗縣", "彰化縣", "南投縣",
+    "雲林縣", "嘉義市", "嘉義縣", "屏東縣", "宜蘭縣", "花蓮縣",
+    "臺東縣", "澎湖縣", "金門縣", "連江縣",
+]
+CITY_TRANSLATION = {
+    "臺北市": "Taipei",      "新北市": "NewTaipei",  "桃園市": "Taoyuan",
+    "臺中市": "Taichung",    "臺南市": "Tainan",      "高雄市": "Kaohsiung",
+    "基隆市": "Keelung",     "新竹市": "Hsinchu",     "新竹縣": "HsinchuCounty",
+    "苗栗縣": "Miaoli",      "彰化縣": "Changhua",    "南投縣": "Nantou",
+    "雲林縣": "Yunlin",      "嘉義市": "Chiayi",      "嘉義縣": "ChiayiCounty",
+    "屏東縣": "Pingtung",    "宜蘭縣": "Yilan",       "花蓮縣": "Hualien",
+    "臺東縣": "Taitung",     "澎湖縣": "Penghu",      "金門縣": "Kinmen",
+    "連江縣": "Lienchiang",
+}
 RETENTION_DAYS = 7  # Keep 7 days of history, then purge older records
 
 
