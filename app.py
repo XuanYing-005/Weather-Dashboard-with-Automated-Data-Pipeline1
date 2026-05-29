@@ -56,8 +56,6 @@ section[data-testid="stSidebar"] > div,
     border-right: none !important;
     box-shadow: 4px 0 20px {SHADOW_DARK};
 }}
-[data-testid="stSidebar"] * {{ color: {TEXT_PRIMARY} !important; }}
-
 /* ── Metric containers ── */
 [data-testid="metric-container"] {{
     background: {BG} !important;
@@ -79,12 +77,10 @@ section[data-testid="stSidebar"] > div,
 }}
 
 /* ── Selectbox ── */
-[data-testid="stSelectbox"] > div > div {{
+[data-testid="stSelectbox"] {{
     background: {BG} !important;
     border-radius: 14px !important;
-    border: none !important;
     box-shadow: 5px 5px 12px {SHADOW_DARK}, -5px -5px 12px {SHADOW_LIGHT} !important;
-    color: {TEXT_PRIMARY} !important;
 }}
 
 /* ── Dataframe ── */
