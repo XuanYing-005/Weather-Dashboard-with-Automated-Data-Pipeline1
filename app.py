@@ -161,6 +161,17 @@ CITY_DISPLAY = {
     "Lienchiang": "連江縣",
 }
 
+CITY_EMOJI = {
+    "Taipei": "🏙️",   "NewTaipei": "🌆",  "Taoyuan": "✈️",
+    "Taichung": "🌳",  "Tainan": "🏯",     "Kaohsiung": "🌊",
+    "Keelung": "⚓",   "Hsinchu": "💨",    "HsinchuCounty": "🌾",
+    "Miaoli": "🏔️",   "Changhua": "🐂",   "Nantou": "🏞️",
+    "Yunlin": "🌽",    "Chiayi": "🌲",     "ChiayiCounty": "🌿",
+    "Pingtung": "🌴",  "Yilan": "🦆",      "Hualien": "🦅",
+    "Taitung": "🌺",   "Penghu": "🪸",     "Kinmen": "🦀",
+    "Lienchiang": "🏝️",
+}
+
 # 依地理區域排序
 CITY_ORDER = [
     "Keelung", "Taipei", "NewTaipei", "Taoyuan", "Hsinchu", "HsinchuCounty", "Yilan",
