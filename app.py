@@ -13,7 +13,7 @@ from sqlalchemy import create_engine
 # Page config
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Taiwan Weather Dashboard",
+    page_title="台灣天氣儀表板",
     page_icon="⛅",
     layout="wide",
 )
@@ -66,21 +66,27 @@ except Exception as e:
     st.stop()
 
 if df.empty:
-    st.warning("No data in the database yet. Run `python etl.py` first.")
+    st.warning("資料庫尚無資料，請先執行 `python etl.py`。")
     st.stop()
+
+CITY_DISPLAY = {"Taipei": "台北市", "Taichung": "台中市", "Kaohsiung": "高雄市"}
 
 # ---------------------------------------------------------------------------
 # Sidebar — filters
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.title("⛅ Filters")
+    st.title("⛅ 篩選條件")
     cities = sorted(df["city"].unique().tolist())
-    selected_city = st.selectbox("Select City", cities)
+    selected_city = st.selectbox(
+        "選擇城市",
+        cities,
+        format_func=lambda x: CITY_DISPLAY.get(x, x),
+    )
 
     st.markdown("---")
     st.caption(
-        "Data refreshes automatically every 3 hours via GitHub Actions. "
-        "The dashboard cache updates every 5 minutes."
+        "資料每 3 小時透過 GitHub Actions 自動更新，"
+        "儀表板快取每 5 分鐘刷新一次。"
     )
 
 # ---------------------------------------------------------------------------
@@ -94,10 +100,10 @@ nearest_forecast = latest_batch.sort_values("forecast_date").iloc[0]
 # ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
-st.title(f"⛅ Taiwan Weather Dashboard — {selected_city}")
+st.title(f"⛅ 台灣天氣儀表板 — {CITY_DISPLAY.get(selected_city, selected_city)}")
 
 last_updated_local = latest_fetched_at.strftime("%Y-%m-%d %H:%M UTC")
-st.info(f"🔄 **Last pipeline run:** {last_updated_local}  |  Auto-refresh: every 3 hours via GitHub Actions")
+st.info(f"🔄 **最後更新時間：** {last_updated_local}  |  自動更新：每 3 小時透過 GitHub Actions 執行")
 
 st.markdown("---")
 
@@ -107,29 +113,29 @@ st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
 
 col1.metric(
-    label="🌡️ Temperature",
+    label="🌡️ 氣溫",
     value=f"{nearest_forecast['temperature']:.1f} °C",
 )
 col2.metric(
-    label="☔ Rain Probability",
+    label="☔ 降雨機率",
     value=f"{nearest_forecast['rain_probability']} %",
 )
 col3.metric(
-    label="😊 Comfort Index",
+    label="😊 舒適度",
     value=nearest_forecast["comfort_index"],
 )
 col4.metric(
-    label="📅 Forecast Date",
+    label="📅 預報日期",
     value=nearest_forecast["forecast_date"].strftime("%Y-%m-%d"),
 )
 
-st.markdown(f"### 👕 Outfit Tip: *{nearest_forecast['outfit_tip']}*")
+st.markdown(f"### 👕 穿搭建議：*{nearest_forecast['outfit_tip']}*")
 st.markdown("---")
 
 # ---------------------------------------------------------------------------
 # Temperature trend chart (latest fetch per forecast_date)
 # ---------------------------------------------------------------------------
-st.subheader("🌡️ Temperature Forecast Trend")
+st.subheader("🌡️ 氣溫預報趨勢")
 
 # For each unique forecast_date, take the row from the most recent fetch
 trend_df = (
@@ -144,8 +150,8 @@ fig_temp = px.line(
     x="forecast_date",
     y="temperature",
     markers=True,
-    labels={"forecast_date": "Date", "temperature": "Temperature (°C)"},
-    title=f"Temperature Trend — {selected_city}",
+    labels={"forecast_date": "日期", "temperature": "氣溫 (°C)"},
+    title=f"氣溫趨勢 — {CITY_DISPLAY.get(selected_city, selected_city)}",
     color_discrete_sequence=["#FF6B35"],
 )
 fig_temp.update_traces(marker_size=8, line_width=2)
@@ -155,14 +161,14 @@ st.plotly_chart(fig_temp, use_container_width=True)
 # ---------------------------------------------------------------------------
 # Rain probability bar chart
 # ---------------------------------------------------------------------------
-st.subheader("☔ Rain Probability Forecast")
+st.subheader("☔ 降雨機率預報")
 
 fig_rain = px.bar(
     trend_df,
     x="forecast_date",
     y="rain_probability",
-    labels={"forecast_date": "Date", "rain_probability": "Rain Probability (%)"},
-    title=f"Rain Probability — {selected_city}",
+    labels={"forecast_date": "日期", "rain_probability": "降雨機率 (%)"},
+    title=f"降雨機率 — {CITY_DISPLAY.get(selected_city, selected_city)}",
     color="rain_probability",
     color_continuous_scale=["#90CAF9", "#1565C0"],
     range_y=[0, 100],
@@ -173,25 +179,27 @@ st.plotly_chart(fig_rain, use_container_width=True)
 # ---------------------------------------------------------------------------
 # Raw data table
 # ---------------------------------------------------------------------------
-st.subheader("📊 Raw Data (Latest Pipeline Batch)")
+st.subheader("📊 原始資料（最新一批次）")
 
 display_df = latest_batch[
     ["forecast_date", "city", "temperature", "rain_probability", "comfort_index", "outfit_tip", "fetched_at"]
 ].rename(
     columns={
-        "forecast_date": "Forecast Date",
-        "city": "City",
-        "temperature": "Temp (°C)",
-        "rain_probability": "Rain Prob (%)",
-        "comfort_index": "Comfort Index",
-        "outfit_tip": "Outfit Tip",
-        "fetched_at": "Fetched At (UTC)",
+        "forecast_date": "預報日期",
+        "city": "城市",
+        "temperature": "氣溫 (°C)",
+        "rain_probability": "降雨機率 (%)",
+        "comfort_index": "舒適度",
+        "outfit_tip": "穿搭建議",
+        "fetched_at": "擷取時間 (UTC)",
     }
-).sort_values("Forecast Date")
+).sort_values("預報日期")
+
+display_df["城市"] = display_df["城市"].map(lambda x: CITY_DISPLAY.get(x, x))
 
 st.dataframe(display_df, use_container_width=True, hide_index=True)
 
 st.caption(
-    "This table shows the most recently fetched batch from the automated pipeline. "
-    "Data is sourced from the Taiwan Central Weather Administration (CWA) Open Data API."
+    "此表格顯示自動化 pipeline 最新一批次的擷取資料，"
+    "資料來源為中央氣象署（CWA）開放資料平台。"
 )
