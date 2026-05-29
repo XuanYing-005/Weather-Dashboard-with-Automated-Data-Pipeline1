@@ -339,13 +339,16 @@ st.plotly_chart(fig_rain, use_container_width=True)
 # ── Three-city comparison ────────────────────────────────────────────────────
 section("🏙️", "三城市即時比較")
 
+latest_per_city = df.groupby("city")["fetched_at"].max().reset_index()
+latest_per_city.columns = ["city", "latest_fetched_at"]
 all_latest = (
-    df.groupby("city", group_keys=False)
-    .apply(lambda g: g[g["fetched_at"] == g["fetched_at"].max()])
+    df.merge(latest_per_city, on="city")
+    .query("fetched_at == latest_fetched_at")
+    .drop(columns=["latest_fetched_at"])
     .drop_duplicates(subset=["city", "forecast_date"])
     .sort_values("forecast_date")
+    .copy()
 )
-all_latest = all_latest.copy()
 all_latest["城市"] = all_latest["city"].map(lambda x: CITY_DISPLAY.get(x, x))
 first_day = all_latest.drop_duplicates("city")
 
