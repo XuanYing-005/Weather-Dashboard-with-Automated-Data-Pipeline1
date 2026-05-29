@@ -1,96 +1,72 @@
-# Executive Summary — Taiwan Weather Dashboard
+# Executive Summary
+## Taiwan Weather Dashboard with Automated Data Pipeline
 
-## Project Overview
-
-A publicly accessible weather dashboard for Taipei, Taichung, and Kaohsiung, built on a fully automated cloud-based ETL pipeline. No BI tools or localhost demo required.
-
----
-
-## 1. Data Pipeline (ETL)
-
-| Component | Technology | Detail |
-|-----------|-----------|--------|
-| Data Source | Taiwan CWA Open Data API (`F-C0032-001`) | 36-hour forecast (temp, rain %) |
-| Extraction | Python `requests` | Fetches JSON for 3 cities per run |
-| Transformation | `pandas` | Parses JSON → DataFrame; derives `comfort_index` & `outfit_tip` |
-| Load | `SQLAlchemy` + `psycopg2` | Appends to Supabase (PostgreSQL); auto-purges records > 7 days old |
-
-**Derived features (business logic):**
-- `comfort_index`: categorizes average temperature into Cold / Cool / Comfortable / Warm / Hot
-- `outfit_tip`: rule-based recommendation (umbrella if PoP > 50 %, coat if < 18 °C, etc.)
+**Live URL:** https://weather-dashboard-with-automated-data-pipeline1-iufvb7uqvnujqx.streamlit.app
 
 ---
 
-## 2. Refresh Mechanism (Automation)
+## 1. Data Pipeline / ETL / Data Wrangling
 
-| Component | Technology | Detail |
-|-----------|-----------|--------|
-| Scheduler | GitHub Actions | Cron `0 */3 * * *` — runs every 3 hours, 24/7 |
-| Manual trigger | `workflow_dispatch` | One-click re-run from GitHub UI |
-| Secrets management | GitHub Secrets | `CWA_API_KEY` and `DATABASE_URL` injected at runtime |
-| Dashboard cache | `st.cache_data(ttl=300)` | Dashboard refreshes from DB every 5 minutes |
+**Data Source:** Taiwan Central Weather Administration (CWA) Open Data API — 36-hour forecast endpoint (`F-C0032-001`), covering **all 22 administrative districts** of Taiwan.
 
-**Evidence of auto-refresh:** The dashboard prominently displays the "Last Pipeline Run" timestamp sourced directly from `fetched_at` in the database, proving live data flow.
+| Stage | Tool | Description |
+|---|---|---|
+| Extract | `requests` | Fetches real-time JSON forecast for all 22 cities per run |
+| Transform | `pandas` | Parses nested JSON; computes average temperature from min/max; derives two business-logic features |
+| Load | `SQLAlchemy` + `psycopg2` | Appends structured records to Supabase (PostgreSQL); auto-purges data older than 7 days |
 
----
+**Derived Features (Business Logic):**
+- `comfort_index` — classifies average temperature into 5 levels: 寒冷 / 涼爽 / 舒適 / 溫熱 / 炎熱
+- `outfit_tip` — rule-based daily recommendation: umbrella (PoP > 50%), heavy coat (< 18°C), light jacket (< 24°C), light clothing otherwise
 
-## 3. Visualization (Dashboard)
-
-Hosted on **Streamlit Community Cloud** (public URL, zero-infrastructure).
-
-| Widget | Purpose |
-|--------|---------|
-| `st.selectbox` | Filter all visuals by city (Taipei / Taichung / Kaohsiung) |
-| `st.metric` (×4) | At-a-glance: Temperature, Rain Probability, Comfort Index, Forecast Date |
-| Plotly line chart | Temperature trend across forecast dates |
-| Plotly bar chart | Rain probability per forecast date |
-| `st.dataframe` | Full raw pipeline output — demonstrates ETL competency |
-| `st.info` banner | Displays last pipeline run timestamp + refresh cadence |
+**Schema:** `weather_forecasts(id, fetched_at, forecast_date, city, temperature, rain_probability, comfort_index, outfit_tip)`
 
 ---
 
-## 4. Deployment Instructions
+## 2. Data Refresh Mechanism
 
-### Step 1 — Database (Supabase)
-1. Create a free project at [supabase.com](https://supabase.com).
-2. Open the SQL Editor and run `schema.sql` to create the `weather_forecasts` table.
-3. Copy the **Connection String** from Settings → Database.
-
-### Step 2 — CWA API Key
-1. Register at [opendata.cwa.gov.tw](https://opendata.cwa.gov.tw).
-2. Generate an API key from your account dashboard.
-
-### Step 3 — GitHub Repository
-1. Push this project to a public GitHub repository.
-2. Go to **Settings → Secrets and variables → Actions** and add:
-   - `CWA_API_KEY` — your CWA API key
-   - `DATABASE_URL` — your Supabase connection string
-3. The GitHub Actions workflow (`.github/workflows/refresh.yml`) will run automatically every 3 hours.
-
-### Step 4 — Streamlit Cloud
-1. Log in at [share.streamlit.io](https://share.streamlit.io).
-2. Connect your GitHub repository and set `app.py` as the entry point.
-3. In **Advanced settings → Secrets**, paste:
-   ```toml
-   DATABASE_URL = "postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres"
-   ```
-4. Deploy — your dashboard is now live at a public URL.
+| Component | Implementation |
+|---|---|
+| Scheduler | GitHub Actions cron — `0 */3 * * *` (every 3 hours, 24/7, zero infrastructure cost) |
+| Manual trigger | `workflow_dispatch` — one-click re-run from GitHub UI |
+| Credential management | `CWA_API_KEY` and `DATABASE_URL` injected via GitHub Secrets (never hardcoded) |
+| Dashboard cache | `st.cache_data(ttl=300)` — re-queries database every 5 minutes |
+| Proof of liveness | Dashboard prominently shows **Last Pipeline Run** timestamp pulled directly from `fetched_at` in the database |
 
 ---
 
-## Technology Stack Summary
+## 3. Visualization
+
+Hosted on **Streamlit Community Cloud** (public URL, no server management).
+
+| Element | Purpose |
+|---|---|
+| City selector (`st.selectbox`) | Filter all visuals by any of the 22 districts, sorted by geographic region |
+| 4× `st.metric` cards | At-a-glance: Temperature, Rain Probability, Comfort Index, Forecast Date |
+| Dynamic weather emoji | Auto-selects from ❄️🧥🌤️☀️🔥🌧️ based on live temperature & rain data |
+| Plotly line chart | Temperature trend with area fill across forecast dates |
+| Plotly bar chart | Rain probability with gradient color scale (light → deep blue) |
+| 3-city comparison charts | Side-by-side bar charts comparing all major cities simultaneously |
+| `st.dataframe` | Full raw pipeline output — demonstrates end-to-end ETL transparency |
+| Daily tip card | Randomly selected weather tips on each load — enhances user engagement |
+
+**UI Design:** Custom Neumorphism (Soft UI) style — unified Noto Sans TC font, extruded card shadows, consistent `#e0e5ec` color palette throughout.
+
+---
+
+## 4. Architecture
 
 ```
 [ CWA Open Data API ]
-        │  requests (Python)
+        │  Python requests
         ▼
-[ GitHub Actions Cron ] ──── every 3 hours ────►  etl.py (pandas transform)
+[ GitHub Actions ]  ──  cron every 3 hrs  ──►  etl.py  (pandas wrangling)
         │  SQLAlchemy / psycopg2
         ▼
-[ Supabase (PostgreSQL) ]
-        │  SQLAlchemy read
+[ Supabase PostgreSQL ]  ──  7-day rolling window
+        │  SQLAlchemy read  (cache TTL 5 min)
         ▼
 [ Streamlit Community Cloud ]  ──►  Public Dashboard URL
 ```
 
-**All constraints satisfied:** no BI tools, no localhost, pure-Python stack, publicly hosted, automated pipeline.
+**Constraints satisfied:** No BI tools · No localhost · Pure Python · Fully cloud-hosted · Automated pipeline · Zero manual data refresh
