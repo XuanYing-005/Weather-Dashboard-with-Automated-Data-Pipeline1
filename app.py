@@ -1,6 +1,5 @@
 """
-Taiwan Weather Dashboard — Streamlit frontend
-Reads live data from Supabase PostgreSQL populated by etl.py.
+Taiwan Weather Dashboard — Neumorphism UI
 """
 import os
 import random
@@ -16,70 +15,100 @@ st.set_page_config(
     layout="wide",
 )
 
-# ── Custom CSS ───────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+BG = "#e0e5ec"
+SHADOW_DARK  = "#a3b1c6"
+SHADOW_LIGHT = "#ffffff"
+TEXT_PRIMARY  = "#31344b"
+TEXT_SECONDARY = "#6b7280"
 
-html, body, [class*="css"], * {
-    font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif !important;
-}
-
-#MainMenu, footer { visibility: hidden; }
-.block-container { padding-top: 1.5rem !important; }
-
-.hero {
-    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 55%, #6c5ce7 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    color: white;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 8px 32px rgba(9,132,227,0.25);
-}
-.hero h1 { font-size: 2rem; font-weight: 900; margin: 0 0 0.3rem; letter-spacing: 0.04em; }
-.hero p  { margin: 0; opacity: 0.88; font-size: 0.88rem; }
-
-.weather-emoji { font-size: 4rem; line-height: 1; }
-
-.outfit-card {
-    background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
-    border-radius: 18px;
-    padding: 1rem 1.6rem;
-    color: white;
-    font-size: 1.05rem;
-    font-weight: 600;
-    margin: 0.6rem 0 1rem;
-    box-shadow: 0 4px 16px rgba(225,112,85,0.28);
-}
-
-.fun-card {
-    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
-    border-radius: 18px;
-    padding: 0.9rem 1.6rem;
-    color: white;
-    font-size: 0.95rem;
-    margin: 0.5rem 0 1.2rem;
-    box-shadow: 0 4px 16px rgba(108,92,231,0.22);
-}
-
-.section-bar {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #2d3436;
-    margin: 1.4rem 0 0.6rem;
-    padding-left: 0.75rem;
-    border-left: 4px solid #0984e3;
-}
-
-[data-testid="metric-container"] {
-    background: #ffffff;
+NEU_CARD = f"""
+    background: {BG};
+    border-radius: 20px;
+    box-shadow: 8px 8px 18px {SHADOW_DARK}, -8px -8px 18px {SHADOW_LIGHT};
+"""
+NEU_INSET = f"""
+    background: {BG};
     border-radius: 16px;
-    padding: 1rem 1.2rem !important;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.07);
-}
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #f0f4ff 0%, #e8eeff 100%);
-}
+    box-shadow: inset 5px 5px 10px {SHADOW_DARK}, inset -5px -5px 10px {SHADOW_LIGHT};
+"""
+
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+* {{ font-family: 'Noto Sans TC', 'PingFang TC', sans-serif !important; }}
+
+/* ── Global background ── */
+.stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stHeader"],
+section[data-testid="stSidebar"] > div,
+[data-testid="stSidebarContent"] {{
+    background: {BG} !important;
+}}
+
+#MainMenu, footer, header {{ visibility: hidden; }}
+.block-container {{ padding-top: 2rem !important; max-width: 1100px; }}
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {{
+    background: {BG} !important;
+    border-right: none !important;
+    box-shadow: 4px 0 20px {SHADOW_DARK};
+}}
+[data-testid="stSidebar"] * {{ color: {TEXT_PRIMARY} !important; }}
+
+/* ── Metric containers ── */
+[data-testid="metric-container"] {{
+    background: {BG} !important;
+    border-radius: 20px !important;
+    padding: 1.4rem 1.2rem !important;
+    box-shadow: 8px 8px 18px {SHADOW_DARK}, -8px -8px 18px {SHADOW_LIGHT} !important;
+    border: none !important;
+}}
+[data-testid="metric-container"] label {{
+    font-size: 0.78rem !important;
+    color: {TEXT_SECONDARY} !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+}}
+[data-testid="stMetricValue"] {{
+    font-size: 1.9rem !important;
+    font-weight: 700 !important;
+    color: {TEXT_PRIMARY} !important;
+}}
+
+/* ── Selectbox ── */
+[data-testid="stSelectbox"] > div > div {{
+    background: {BG} !important;
+    border-radius: 14px !important;
+    border: none !important;
+    box-shadow: 5px 5px 12px {SHADOW_DARK}, -5px -5px 12px {SHADOW_LIGHT} !important;
+    color: {TEXT_PRIMARY} !important;
+}}
+
+/* ── Dataframe ── */
+[data-testid="stDataFrame"] {{
+    border-radius: 20px !important;
+    overflow: hidden;
+    box-shadow: 8px 8px 18px {SHADOW_DARK}, -8px -8px 18px {SHADOW_LIGHT} !important;
+}}
+
+/* ── Plotly chart container ── */
+[data-testid="stPlotlyChart"] {{
+    border-radius: 20px !important;
+    padding: 0.5rem !important;
+    box-shadow: 8px 8px 18px {SHADOW_DARK}, -8px -8px 18px {SHADOW_LIGHT} !important;
+    background: {BG} !important;
+}}
+
+/* ── Caption ── */
+[data-testid="stCaptionContainer"] p {{ color: {TEXT_SECONDARY} !important; }}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {{ width: 6px; }}
+::-webkit-scrollbar-track {{ background: {BG}; }}
+::-webkit-scrollbar-thumb {{ background: {SHADOW_DARK}; border-radius: 10px; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -90,7 +119,7 @@ def get_database_url() -> str:
     except (KeyError, FileNotFoundError):
         url = os.environ.get("DATABASE_URL")
         if not url:
-            st.error("DATABASE_URL 未設定，請新增至 .streamlit/secrets.toml 或環境變數。")
+            st.error("DATABASE_URL 未設定。")
             st.stop()
         return url
 
@@ -132,9 +161,9 @@ FUN_TIPS = [
     "🌿 台灣的天氣變化快，包包裡放把折疊傘最保險～",
     "🧴 紫外線強的時候，防曬乳是你最好的朋友！",
     "🍵 下雨天最適合喝一杯熱飲，讓心情變好 ☕",
-    "🎒 今天的天氣資料來自中央氣象署，比鄰居阿姨的預測準多了 😄",
     "🌈 每一場雨後都可能有彩虹，抬頭找找看！",
     "❄️ 氣溫驟降記得加件外套，健康最重要！",
+    "🎒 今天的天氣資料來自中央氣象署，比鄰居阿姨的預測準多了 😄",
 ]
 
 def weather_emoji(temp: float, rain: int) -> str:
@@ -147,59 +176,126 @@ def weather_emoji(temp: float, rain: int) -> str:
     if temp < 32:  return "☀️"
     return "🔥"
 
+def chart_layout(title="", height=300):
+    return dict(
+        title=dict(text=title, font=dict(size=13, color=TEXT_SECONDARY, family="Noto Sans TC")),
+        height=height,
+        plot_bgcolor=BG,
+        paper_bgcolor=BG,
+        margin=dict(l=10, r=10, t=36, b=10),
+        font=dict(family="Noto Sans TC, sans-serif", color=TEXT_PRIMARY),
+        xaxis=dict(showgrid=False, tickfont=dict(color=TEXT_SECONDARY), tickformat="%m/%d"),
+        yaxis=dict(gridcolor="#cdd3df", gridwidth=1, tickfont=dict(color=TEXT_SECONDARY)),
+        hovermode="x unified",
+        hoverlabel=dict(bgcolor=BG, bordercolor=SHADOW_DARK, font_color=TEXT_PRIMARY),
+    )
+
 # ── Sidebar ──────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🌏 城市選擇")
+    st.markdown(f"<div style='height:1.5rem'></div>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style='{NEU_CARD} padding:1.5rem; margin-bottom:1.5rem; text-align:center;'>
+        <div style='font-size:2.8rem'>🌤️</div>
+        <div style='font-size:1.1rem; font-weight:700; color:{TEXT_PRIMARY}; margin-top:0.4rem;'>台灣天氣通</div>
+        <div style='font-size:0.78rem; color:{TEXT_SECONDARY}; margin-top:0.2rem;'>Taiwan Weather Dashboard</div>
+    </div>
+    """, unsafe_allow_html=True)
+
     cities = sorted(df["city"].unique().tolist())
     selected_city = st.selectbox(
-        "選擇要查看的城市",
+        "選擇城市",
         cities,
         format_func=lambda x: f"{CITY_EMOJI.get(x,'')} {CITY_DISPLAY.get(x, x)}",
     )
-    st.markdown("---")
-    st.markdown("### 📡 資料來源")
-    st.caption("中央氣象署（CWA）開放資料平台")
-    st.markdown("### ⏰ 更新頻率")
-    st.caption("每 3 小時透過 GitHub Actions 自動抓取，儀表板快取每 5 分鐘刷新。")
-    st.markdown("---")
-    st.caption("Made with ❤️ & Streamlit")
 
-# ── Filter data ──────────────────────────────────────────────────────────────
-city_df         = df[df["city"] == selected_city].copy()
-latest_fetch    = city_df["fetched_at"].max()
-latest_batch    = city_df[city_df["fetched_at"] == latest_fetch]
-nearest         = latest_batch.sort_values("forecast_date").iloc[0]
-city_name       = CITY_DISPLAY.get(selected_city, selected_city)
-w_emoji         = weather_emoji(nearest["temperature"], nearest["rain_probability"])
-updated_str     = latest_fetch.strftime("%Y-%m-%d %H:%M UTC")
-
-# ── Hero ─────────────────────────────────────────────────────────────────────
-col_text, col_icon = st.columns([5, 1])
-with col_text:
+    st.markdown(f"<div style='height:1rem'></div>", unsafe_allow_html=True)
     st.markdown(f"""
-    <div class="hero">
-        <h1>{CITY_EMOJI.get(selected_city,'')} 台灣天氣通 · {city_name}</h1>
-        <p>🔄 最後更新：{updated_str} &nbsp;｜&nbsp; ⚡ 自動更新：每 3 小時</p>
+    <div style='{NEU_INSET} padding:1rem 1.2rem;'>
+        <div style='font-size:0.75rem; color:{TEXT_SECONDARY}; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.5rem;'>資料資訊</div>
+        <div style='font-size:0.82rem; color:{TEXT_PRIMARY}; line-height:1.7;'>
+            📡 中央氣象署（CWA）<br>
+            ⏰ 每 3 小時自動更新<br>
+            🔄 快取每 5 分鐘刷新
+        </div>
     </div>
     """, unsafe_allow_html=True)
-with col_icon:
-    st.markdown(f"<div style='text-align:center; font-size:5rem; padding-top:0.3rem'>{w_emoji}</div>",
-                unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style='text-align:center; margin-top:2rem; font-size:0.75rem; color:{TEXT_SECONDARY};'>
+        Made with ❤️ &amp; Streamlit
+    </div>
+    """, unsafe_allow_html=True)
+
+# ── Filter data ──────────────────────────────────────────────────────────────
+city_df      = df[df["city"] == selected_city].copy()
+latest_fetch = city_df["fetched_at"].max()
+latest_batch = city_df[city_df["fetched_at"] == latest_fetch]
+nearest      = latest_batch.sort_values("forecast_date").iloc[0]
+city_name    = CITY_DISPLAY.get(selected_city, selected_city)
+w_emoji      = weather_emoji(nearest["temperature"], nearest["rain_probability"])
+updated_str  = latest_fetch.strftime("%Y-%m-%d %H:%M UTC")
+
+# ── Hero header ──────────────────────────────────────────────────────────────
+col_h, col_e = st.columns([5, 1])
+with col_h:
+    st.markdown(f"""
+    <div style='{NEU_CARD} padding:2rem 2.5rem; margin-bottom:1.8rem;'>
+        <div style='font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:{TEXT_SECONDARY}; margin-bottom:0.5rem;'>
+            {CITY_EMOJI.get(selected_city,'')} TAIWAN WEATHER DASHBOARD
+        </div>
+        <div style='font-size:2rem; font-weight:900; color:{TEXT_PRIMARY}; letter-spacing:0.03em;'>
+            {city_name} 天氣預報
+        </div>
+        <div style='margin-top:0.8rem;'>
+            <span style='{NEU_INSET} display:inline-block; padding:0.3rem 0.9rem; font-size:0.78rem; color:{TEXT_SECONDARY}; border-radius:99px;'>
+                🔄 最後更新：{updated_str}
+            </span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+with col_e:
+    st.markdown(f"""
+    <div style='{NEU_CARD} padding:1.8rem 1rem; text-align:center; margin-bottom:1.8rem;'>
+        <div style='font-size:3.5rem; line-height:1;'>{w_emoji}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ── Metrics ──────────────────────────────────────────────────────────────────
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("🌡️ 氣溫",    f"{nearest['temperature']:.1f} °C")
 c2.metric("☔ 降雨機率", f"{nearest['rain_probability']} %")
 c3.metric("😊 舒適度",  nearest["comfort_index"])
-c4.metric("📅 預報日期", nearest["forecast_date"].strftime("%m/%d"))
+c4.metric("📅 預報日期", nearest["forecast_date"].strftime("%m / %d"))
 
-# Outfit tip
-st.markdown(f'<div class="outfit-card">👕 穿搭建議：{nearest["outfit_tip"]}</div>',
-            unsafe_allow_html=True)
+st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
 
-# Fun tip (random each load)
-tip = random.choice(FUN_TIPS)
-st.markdown(f'<div class="fun-card">💡 今日小提醒：{tip}</div>', unsafe_allow_html=True)
+# ── Outfit + fun tip ─────────────────────────────────────────────────────────
+col_a, col_b = st.columns(2)
+with col_a:
+    st.markdown(f"""
+    <div style='{NEU_CARD} padding:1.2rem 1.6rem;'>
+        <div style='font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:{TEXT_SECONDARY}; margin-bottom:0.4rem;'>👕 穿搭建議</div>
+        <div style='font-size:1.05rem; font-weight:600; color:{TEXT_PRIMARY};'>{nearest["outfit_tip"]}</div>
+    </div>
+    """, unsafe_allow_html=True)
+with col_b:
+    tip = random.choice(FUN_TIPS)
+    st.markdown(f"""
+    <div style='{NEU_CARD} padding:1.2rem 1.6rem;'>
+        <div style='font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:{TEXT_SECONDARY}; margin-bottom:0.4rem;'>💡 今日小提醒</div>
+        <div style='font-size:0.95rem; color:{TEXT_PRIMARY};'>{tip}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
+
+# ── Section label helper ─────────────────────────────────────────────────────
+def section(icon, label):
+    st.markdown(f"""
+    <div style='font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
+                color:{TEXT_SECONDARY}; margin:1.8rem 0 0.6rem; padding-left:0.2rem;'>
+        {icon} {label}
+    </div>""", unsafe_allow_html=True)
 
 # ── Trend charts ─────────────────────────────────────────────────────────────
 trend_df = (
@@ -209,105 +305,95 @@ trend_df = (
     .reset_index(drop=True)
 )
 
-st.markdown('<div class="section-bar">🌡️ 氣溫預報趨勢</div>', unsafe_allow_html=True)
-
-fig_temp = px.line(
-    trend_df, x="forecast_date", y="temperature",
-    markers=True,
-    labels={"forecast_date": "日期", "temperature": "氣溫 (°C)"},
-    color_discrete_sequence=["#0984e3"],
-)
-fig_temp.update_traces(
-    marker=dict(size=10, color="#ffffff", line=dict(width=2, color="#0984e3")),
-    line=dict(width=3),
-)
-fig_temp.update_layout(
-    height=320, hovermode="x unified",
-    plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-    margin=dict(l=0, r=0, t=10, b=0),
-    xaxis=dict(showgrid=False, tickformat="%m/%d"),
-    yaxis=dict(gridcolor="#f0f0f0", ticksuffix=" °C"),
-    font=dict(family="Noto Sans TC, sans-serif"),
-)
+section("🌡️", "氣溫預報趨勢")
+fig_temp = go.Figure()
+fig_temp.add_trace(go.Scatter(
+    x=trend_df["forecast_date"], y=trend_df["temperature"],
+    mode="lines+markers",
+    line=dict(color="#89a4c7", width=3),
+    marker=dict(size=10, color=BG, line=dict(width=2.5, color="#89a4c7")),
+    fill="tozeroy",
+    fillcolor="rgba(137,164,199,0.1)",
+    hovertemplate="%{x|%m/%d}<br>氣溫：%{y:.1f} °C<extra></extra>",
+))
+fig_temp.update_layout(**chart_layout(height=300))
+fig_temp.update_yaxes(ticksuffix=" °C")
 st.plotly_chart(fig_temp, use_container_width=True)
 
-st.markdown('<div class="section-bar">☔ 降雨機率預報</div>', unsafe_allow_html=True)
-
-fig_rain = px.bar(
-    trend_df, x="forecast_date", y="rain_probability",
-    labels={"forecast_date": "日期", "rain_probability": "降雨機率 (%)"},
-    color="rain_probability",
-    color_continuous_scale=["#b2d8f7", "#0984e3", "#2d3436"],
-    range_y=[0, 100],
-)
-fig_rain.update_layout(
-    height=280, coloraxis_showscale=False,
-    plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-    margin=dict(l=0, r=0, t=10, b=0),
-    xaxis=dict(showgrid=False, tickformat="%m/%d"),
-    yaxis=dict(gridcolor="#f0f0f0", ticksuffix=" %"),
-    font=dict(family="Noto Sans TC, sans-serif"),
-    bargap=0.35,
-)
+section("☔", "降雨機率預報")
+fig_rain = go.Figure()
+fig_rain.add_trace(go.Bar(
+    x=trend_df["forecast_date"], y=trend_df["rain_probability"],
+    marker=dict(
+        color=trend_df["rain_probability"],
+        colorscale=[[0, "#d4e4f7"], [0.5, "#89a4c7"], [1, "#4a6fa5"]],
+        line=dict(width=0),
+    ),
+    hovertemplate="%{x|%m/%d}<br>降雨機率：%{y} %<extra></extra>",
+))
+fig_rain.update_layout(**chart_layout(height=260))
+fig_rain.update_yaxes(ticksuffix=" %", range=[0, 100])
+fig_rain.update_xaxes(tickformat="%m/%d")
 st.plotly_chart(fig_rain, use_container_width=True)
 
 # ── Three-city comparison ────────────────────────────────────────────────────
-st.markdown('<div class="section-bar">🏙️ 三城市即時比較</div>', unsafe_allow_html=True)
+section("🏙️", "三城市即時比較")
 
 all_latest = (
     df.groupby("city", group_keys=False)
     .apply(lambda g: g[g["fetched_at"] == g["fetched_at"].max()])
-    .sort_values("forecast_date")
     .drop_duplicates(subset=["city", "forecast_date"])
+    .sort_values("forecast_date")
 )
 all_latest = all_latest.copy()
 all_latest["城市"] = all_latest["city"].map(lambda x: CITY_DISPLAY.get(x, x))
+first_day = all_latest.drop_duplicates("city")
+
+CITY_COLORS = {
+    "台北市": "#89a4c7",
+    "台中市": "#a8d5b5",
+    "高雄市": "#e8a0b4",
+}
 
 col_l, col_r = st.columns(2)
-
 with col_l:
-    fig_cmp_t = px.bar(
-        all_latest.drop_duplicates("city"),
-        x="城市", y="temperature",
-        color="城市",
-        color_discrete_map={"台北市": "#0984e3", "台中市": "#00b894", "高雄市": "#e17055"},
-        labels={"temperature": "氣溫 (°C)"},
-        title="各城市氣溫",
-        text_auto=".1f",
-    )
-    fig_cmp_t.update_layout(
-        height=280, showlegend=False,
-        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=0, r=0, t=36, b=0),
-        font=dict(family="Noto Sans TC, sans-serif"),
-        yaxis=dict(gridcolor="#f0f0f0"),
-    )
-    fig_cmp_t.update_traces(textposition="outside", marker_line_width=0)
-    st.plotly_chart(fig_cmp_t, use_container_width=True)
+    fig_ct = go.Figure()
+    for _, row in first_day.iterrows():
+        c = row["城市"]
+        fig_ct.add_trace(go.Bar(
+            x=[c], y=[row["temperature"]],
+            name=c,
+            marker_color=CITY_COLORS.get(c, "#aaa"),
+            marker_line_width=0,
+            text=[f"{row['temperature']:.1f}°C"],
+            textposition="outside",
+            hovertemplate=f"{c}<br>氣溫：%{{y:.1f}} °C<extra></extra>",
+        ))
+    fig_ct.update_layout(**chart_layout("氣溫比較", height=280))
+    fig_ct.update_layout(showlegend=False, bargap=0.45)
+    fig_ct.update_yaxes(ticksuffix=" °C")
+    st.plotly_chart(fig_ct, use_container_width=True)
 
 with col_r:
-    fig_cmp_r = px.bar(
-        all_latest.drop_duplicates("city"),
-        x="城市", y="rain_probability",
-        color="城市",
-        color_discrete_map={"台北市": "#74b9ff", "台中市": "#55efc4", "高雄市": "#fab1a0"},
-        labels={"rain_probability": "降雨機率 (%)"},
-        title="各城市降雨機率",
-        range_y=[0, 100],
-        text_auto=True,
-    )
-    fig_cmp_r.update_layout(
-        height=280, showlegend=False,
-        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=0, r=0, t=36, b=0),
-        font=dict(family="Noto Sans TC, sans-serif"),
-        yaxis=dict(gridcolor="#f0f0f0", ticksuffix=" %"),
-    )
-    fig_cmp_r.update_traces(textposition="outside", marker_line_width=0)
-    st.plotly_chart(fig_cmp_r, use_container_width=True)
+    fig_cr = go.Figure()
+    for _, row in first_day.iterrows():
+        c = row["城市"]
+        fig_cr.add_trace(go.Bar(
+            x=[c], y=[row["rain_probability"]],
+            name=c,
+            marker_color=CITY_COLORS.get(c, "#aaa"),
+            marker_line_width=0,
+            text=[f"{int(row['rain_probability'])}%"],
+            textposition="outside",
+            hovertemplate=f"{c}<br>降雨機率：%{{y}} %<extra></extra>",
+        ))
+    fig_cr.update_layout(**chart_layout("降雨機率比較", height=280))
+    fig_cr.update_layout(showlegend=False, bargap=0.45)
+    fig_cr.update_yaxes(ticksuffix=" %", range=[0, 110])
+    st.plotly_chart(fig_cr, use_container_width=True)
 
 # ── Raw data ─────────────────────────────────────────────────────────────────
-st.markdown('<div class="section-bar">📊 原始資料（最新批次）</div>', unsafe_allow_html=True)
+section("📊", "原始資料（最新批次）")
 
 display_df = latest_batch[[
     "forecast_date", "city", "temperature", "rain_probability",
