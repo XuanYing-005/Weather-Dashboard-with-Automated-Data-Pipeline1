@@ -34,26 +34,26 @@ RETENTION_DAYS = 7  # Keep 7 days of history, then purge older records
 # ---------------------------------------------------------------------------
 def compute_comfort_index(temp: float) -> str:
     if temp < 18:
-        return "Cold"
+        return "寒冷"
     elif temp < 24:
-        return "Cool"
+        return "涼爽"
     elif temp < 28:
-        return "Comfortable"
+        return "舒適"
     elif temp < 32:
-        return "Warm"
+        return "溫熱"
     else:
-        return "Hot"
+        return "炎熱"
 
 
 def compute_outfit_tip(temp: float, rain_prob: int) -> str:
     if rain_prob > 50:
-        return "Bring an umbrella"
+        return "記得帶傘"
     elif temp < 18:
-        return "Wear a heavy coat"
+        return "建議穿厚外套"
     elif temp < 24:
-        return "Wear a light jacket"
+        return "建議穿薄外套"
     else:
-        return "Light clothing recommended"
+        return "輕薄衣物即可"
 
 
 # ---------------------------------------------------------------------------
