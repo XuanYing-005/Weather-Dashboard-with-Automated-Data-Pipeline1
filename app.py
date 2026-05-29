@@ -151,25 +151,24 @@ if df.empty:
 
 # ── Constants ────────────────────────────────────────────────────────────────
 CITY_DISPLAY = {
-    "Taipei": "台北市",       "NewTaipei": "新北市",    "Taoyuan": "桃園市",
-    "Taichung": "台中市",     "Tainan": "台南市",       "Kaohsiung": "高雄市",
+    "Taipei": "臺北市",       "NewTaipei": "新北市",    "Taoyuan": "桃園市",
+    "Taichung": "臺中市",     "Tainan": "臺南市",       "Kaohsiung": "高雄市",
     "Keelung": "基隆市",      "Hsinchu": "新竹市",      "HsinchuCounty": "新竹縣",
     "Miaoli": "苗栗縣",       "Changhua": "彰化縣",     "Nantou": "南投縣",
     "Yunlin": "雲林縣",       "Chiayi": "嘉義市",       "ChiayiCounty": "嘉義縣",
     "Pingtung": "屏東縣",     "Yilan": "宜蘭縣",        "Hualien": "花蓮縣",
-    "Taitung": "台東縣",      "Penghu": "澎湖縣",       "Kinmen": "金門縣",
+    "Taitung": "臺東縣",      "Penghu": "澎湖縣",       "Kinmen": "金門縣",
     "Lienchiang": "連江縣",
 }
-CITY_EMOJI = {
-    "Taipei": "🏙️",   "NewTaipei": "🌆",  "Taoyuan": "✈️",
-    "Taichung": "🌳",  "Tainan": "🏯",     "Kaohsiung": "🌊",
-    "Keelung": "⚓",   "Hsinchu": "💨",    "HsinchuCounty": "🌾",
-    "Miaoli": "🏔️",   "Changhua": "🐂",   "Nantou": "🏞️",
-    "Yunlin": "🌽",    "Chiayi": "🌲",     "ChiayiCounty": "🌿",
-    "Pingtung": "🌴",  "Yilan": "🦆",      "Hualien": "🦅",
-    "Taitung": "🌺",   "Penghu": "🪸",     "Kinmen": "🦀",
-    "Lienchiang": "🏝️",
-}
+
+# 依地理區域排序
+CITY_ORDER = [
+    "Keelung", "Taipei", "NewTaipei", "Taoyuan", "Hsinchu", "HsinchuCounty", "Yilan",
+    "Miaoli", "Taichung", "Changhua", "Nantou", "Yunlin",
+    "Chiayi", "ChiayiCounty", "Tainan", "Kaohsiung", "Pingtung",
+    "Hualien", "Taitung",
+    "Penghu", "Kinmen", "Lienchiang",
+]
 
 FUN_TIPS = [
     "☀️ 出門前抬頭看天空，比看手機更準！",
@@ -222,13 +221,14 @@ with top_right:
     </div>
     """, unsafe_allow_html=True)
 
-cities = sorted(df["city"].unique().tolist())
+available = set(df["city"].unique().tolist())
+cities = [c for c in CITY_ORDER if c in available]
 sel_col, _ = st.columns([2, 3])
 with sel_col:
     selected_city = st.selectbox(
         "選擇縣市",
         cities,
-        format_func=lambda x: f"{CITY_EMOJI.get(x,'')} {CITY_DISPLAY.get(x, x)}",
+        format_func=lambda x: CITY_DISPLAY.get(x, x),
     )
 
 # ── Filter data ──────────────────────────────────────────────────────────────
