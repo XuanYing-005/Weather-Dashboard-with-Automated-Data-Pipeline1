@@ -41,9 +41,7 @@ st.markdown(f"""
 /* ── Global background ── */
 .stApp,
 [data-testid="stAppViewContainer"],
-[data-testid="stHeader"],
-section[data-testid="stSidebar"] > div,
-[data-testid="stSidebarContent"] {{
+[data-testid="stHeader"] {{
     background: {BG} !important;
 }}
 
@@ -52,9 +50,11 @@ section[data-testid="stSidebar"] > div,
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {{
-    background: {BG} !important;
-    border-right: none !important;
-    box-shadow: 4px 0 20px {SHADOW_DARK};
+    background: #d6dce8 !important;
+    border-right: 1px solid {SHADOW_DARK} !important;
+}}
+[data-testid="stSidebar"] > div {{
+    background: #d6dce8 !important;
 }}
 /* ── Metric containers ── */
 [data-testid="metric-container"] {{
