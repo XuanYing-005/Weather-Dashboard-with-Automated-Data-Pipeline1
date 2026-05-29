@@ -48,13 +48,15 @@ st.markdown(f"""
 #MainMenu, footer, header {{ visibility: hidden; }}
 .block-container {{ padding-top: 2rem !important; max-width: 1100px; }}
 
-/* ── Sidebar ── */
-[data-testid="stSidebar"] {{
-    background: #d6dce8 !important;
-    border-right: 1px solid {SHADOW_DARK} !important;
+/* ── Selectbox ── */
+[data-testid="stSelectbox"] {{
+    border-radius: 14px !important;
 }}
-[data-testid="stSidebar"] > div {{
-    background: #d6dce8 !important;
+[data-testid="stSelectbox"] > div {{
+    background: {BG} !important;
+    border-radius: 14px !important;
+    box-shadow: 5px 5px 12px {SHADOW_DARK}, -5px -5px 12px {SHADOW_LIGHT} !important;
+    border: none !important;
 }}
 /* ── Metric containers ── */
 [data-testid="metric-container"] {{
@@ -204,41 +206,30 @@ def chart_layout(title="", height=300):
         hoverlabel=dict(bgcolor=BG, bordercolor=SHADOW_DARK, font_color=TEXT_PRIMARY),
     )
 
-# ── Sidebar ──────────────────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown(f"<div style='height:1.5rem'></div>", unsafe_allow_html=True)
+# ── Top bar ──────────────────────────────────────────────────────────────────
+top_left, top_right = st.columns([3, 1])
+with top_left:
     st.markdown(f"""
-    <div style='{NEU_CARD} padding:1.5rem; margin-bottom:1.5rem; text-align:center;'>
-        <div style='font-size:2.8rem'>🌤️</div>
-        <div style='font-size:1.1rem; font-weight:700; color:{TEXT_PRIMARY}; margin-top:0.4rem;'>台灣天氣通</div>
-        <div style='font-size:0.78rem; color:{TEXT_SECONDARY}; margin-top:0.2rem;'>Taiwan Weather Dashboard</div>
+    <div style='padding:0.4rem 0 1rem;'>
+        <span style='font-size:1.5rem; font-weight:900; color:{TEXT_PRIMARY};'>🌤️ 台灣天氣通</span>
+        <span style='font-size:0.8rem; color:{TEXT_SECONDARY}; margin-left:0.8rem;'>Taiwan Weather Dashboard</span>
+    </div>
+    """, unsafe_allow_html=True)
+with top_right:
+    st.markdown(f"""
+    <div style='font-size:0.72rem; color:{TEXT_SECONDARY}; text-align:right; padding-top:0.6rem;'>
+        📡 中央氣象署 ｜ ⏰ 每 3 小時更新
     </div>
     """, unsafe_allow_html=True)
 
-    cities = sorted(df["city"].unique().tolist())
+cities = sorted(df["city"].unique().tolist())
+sel_col, _ = st.columns([2, 3])
+with sel_col:
     selected_city = st.selectbox(
-        "選擇城市",
+        "選擇縣市",
         cities,
         format_func=lambda x: f"{CITY_EMOJI.get(x,'')} {CITY_DISPLAY.get(x, x)}",
     )
-
-    st.markdown(f"<div style='height:1rem'></div>", unsafe_allow_html=True)
-    st.markdown(f"""
-    <div style='{NEU_INSET} padding:1rem 1.2rem;'>
-        <div style='font-size:0.75rem; color:{TEXT_SECONDARY}; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.5rem;'>資料資訊</div>
-        <div style='font-size:0.82rem; color:{TEXT_PRIMARY}; line-height:1.7;'>
-            📡 中央氣象署（CWA）<br>
-            ⏰ 每 3 小時自動更新<br>
-            🔄 快取每 5 分鐘刷新
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div style='text-align:center; margin-top:2rem; font-size:0.75rem; color:{TEXT_SECONDARY};'>
-        Made with ❤️ &amp; Streamlit
-    </div>
-    """, unsafe_allow_html=True)
 
 # ── Filter data ──────────────────────────────────────────────────────────────
 city_df      = df[df["city"] == selected_city].copy()
